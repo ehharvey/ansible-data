@@ -1,0 +1,7 @@
+# All venv-related things
+*venv*
+
+__pycache__
+
+tests/output/
+tests/integration/inventory

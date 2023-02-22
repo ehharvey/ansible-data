@@ -1,0 +1,83 @@
+- name: Basic test
+  ansible.builtin.debug:
+    msg: "{{ test_passed | ternary('Passed', 'Failed') }}"
+  vars:
+    hello: world
+    foo: bar
+    table:
+      columns:
+        var1: hello
+        var2: foo
+        item: item
+      loop:
+        - a
+        - b
+    actual: "{{ lookup('ehharvey.data.tabular', table) }}"
+    expected:
+      - var1: world
+        var2: bar
+        item: a
+      - var1: world
+        var2: bar
+        item: b
+    test_passed: "{{ actual == expected }}"
+  failed_when: actual != expected
+
+- name: All options set
+  ansible.builtin.debug:
+    msg: "{{ test_passed | ternary('Passed', 'Failed') }}"
+  vars:
+    hello: world
+    foo: bar
+    table:
+      columns:
+        var1: "[[ hello ]]"
+        var2: "[[ foo ]]"
+        combined: "[[ itemvar.var1 + itemvar.var2 ]]"
+      loop:
+        - myvar: abc
+        - myvar: def
+      template_control:
+        loop_var: itemvar
+        merge_with_item: yes
+        allow_row_templating: yes
+        convert_bare: no
+        variable_start_string: "[["
+        variable_end_string: "]]"
+    actual: "{{ lookup('ehharvey.data.tabular', table) }}"
+    expected:
+      - var2: bar
+        var1: world
+        combined: worldbar
+        myvar: abc
+      - var2: bar
+        var1: world
+        combined: worldbar
+        myvar: def
+    test_passed: "{{ actual == expected }}"
+  failed_when: actual != expected
+
+- name: Test interop with builtin filter plugins
+  ansible.builtin.debug:
+    msg: "{{ test_passed | ternary('Passed', 'Failed') }}"
+  vars:
+    hello: world
+    foo: BAR
+    table:
+      columns:
+        var1: hello | upper
+        var2: foo | lower
+        item: item | reject("equalto", "bad") | join(" ")
+      loop:
+        - ["good", "bad", "good"]
+        - ["the", "quick", "brown", "fox"]
+    actual: "{{ lookup('ehharvey.data.tabular', table) }}"
+    expected:
+      - var1: WORLD
+        var2: bar
+        item: "good good"
+      - var1: WORLD
+        var2: bar
+        item: "the quick brown fox"
+    test_passed: "{{ actual == expected }}"
+  failed_when: actual != expected

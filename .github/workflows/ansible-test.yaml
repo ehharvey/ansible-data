@@ -1,0 +1,42 @@
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+steps:
+  - uses: actions/checkout@v3
+
+  - name: Set up Python 3.10
+    uses: actions/setup-python@v3
+    with:
+      python-version: "3.10"
+  
+  - name: Install dependencies
+    run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest coverage pep8
+        pip install -r dev-requirements.txt
+
+  - name: Perform integration testing with ansible-test
+    uses: ansible-community/ansible-test-gh-action@release/v1.12.0
+    with:
+      ansible-core-version: stable-2.14
+      pre-test-cmd: echo This runs before the ansible-test invocation
+      target-python-version: 3.10
+      controller-python-version: auto
+      testing-type: integration
+
+  - name: Perform sanity testing with ansible-test
+    uses: ansible-community/ansible-test-gh-action@release/v1.12.0
+    with:
+      ansible-core-version: stable-2.14
+      testing-type: sanity
+
+  - name: Perform unit testing with ansible-test
+    uses: ansible-community/ansible-test-gh-action@release/v1
+    with:
+      ansible-core-version: stable-2.14
+      pre-test-cmd: echo This runs before the ansible-test invocation
+      target-python-version: 3.10
+      testing-type: units
