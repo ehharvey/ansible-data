@@ -25,6 +25,7 @@ jobs:
 
       - name: Run tests
         run: |
+          rm -rf ../ansible_collections/
           mkdir -p ../ansible_collections/ehharvey/data
           cp -r * ../ansible_collections/ehharvey/data
           pushd ../ansible_collections/ehharvey/data
